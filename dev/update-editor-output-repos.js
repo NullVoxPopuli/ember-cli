@@ -23,7 +23,7 @@ async function updateOnlineEditorRepos() {
     return;
   }
 
-  let repo = `https://${GITHUB_TOKEN}@github.com:ember-cli/editor-output.git`;
+  let repo = `https://${GITHUB_TOKEN}@github.com/ember-cli/editor-output.git`;
   let onlineEditors = ['stackblitz'];
   let variants = ['javascript', 'typescript'];
 
