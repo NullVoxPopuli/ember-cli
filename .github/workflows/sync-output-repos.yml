@@ -49,7 +49,6 @@ jobs:
       - run: yarn install --frozen-lockfile --non-interactive
       - name: "Configure Git"
         run: |
-          git config --unset-all http.https://github.com/.extraheader
           git config user.name ${{ env.GIT_NAME }}
           git config user.email ${{ env.GIT_EMAIL }}
       - run: node ./dev/update-output-repos.js
@@ -69,7 +68,6 @@ jobs:
       - run: yarn install --frozen-lockfile --non-interactive
       - name: "Configure Git"
         run: |
-          git config --unset-all http.https://github.com/.extraheader
           git config user.name ${{ env.GIT_NAME }}
           git config user.email ${{ env.GIT_EMAIL }}
       - run: node ./dev/update-editor-output-repos.js
