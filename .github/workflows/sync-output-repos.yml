@@ -53,7 +53,7 @@ jobs:
           git config --global user.email "${{ env.GIT_EMAIL }}"
       - run: node ./dev/update-output-repos.js
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
   push-editors:
     name: "Push to editor output repos"
@@ -74,4 +74,4 @@ jobs:
           git config --global user.email "${{ env.GIT_EMAIL }}"
       - run: node ./dev/update-editor-output-repos.js
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
