@@ -65,7 +65,7 @@ async function updateOnlineEditorRepos() {
 
       // node_modules is .gitignored, but since we already need to remove package-lock.json due to #10045,
       // we may as well remove node_modules as while we're at it, just in case.
-      await execa('rm', ['-rf', 'node_modules', 'package-lock.json'], { cwd: updatedOutputTmpDir });
+      await execa('rm', ['-rf', 'node_modules', 'package-lock.json'], { cwd: updatedOutputTmpDir.name });
 
       let generatedOutputPath = path.join(updatedOutputTmpDir.name, name);
 
