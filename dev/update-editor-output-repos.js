@@ -44,8 +44,28 @@ async function updateOnlineEditorRepos() {
         [command, name, `--skip-bower`, `--skip-npm`, `--skip-git`, ...(isTypeScript ? ['--typescript'] : [])],
         {
           cwd: updatedOutputTmpDir.name,
+          env: {
+            /**
+             * using --typescript triggers npm's peer resolution features,
+             * and since we don't know if the npm package has been released yet,
+             * (and therefor) generate the project using the local ember-cli,
+             * the ember-cli version may not exist yet.
+             *
+             * We need to tell npm to ignore peers and just "let things be".
+             * Especially since we don't actually care about npm running,
+             * and just want the typescript files to generate.
+             *
+             * See this related issue: https://github.com/ember-cli/ember-cli/issues/10045
+             */
+            // eslint-disable-next-line camelcase
+            npm_config_legacy_peer_deps: 'true',
+          },
         }
       );
+
+      // node_modules is .gitignored, but since we already need to remove package-lock.json due to #10045,
+      // we may as well remove node_modules as while we're at it, just in case.
+      await execa('rm', ['-rf', 'node_modules', 'package-lock.json'], { cwd: updatedOutputTmpDir });
 
       let generatedOutputPath = path.join(updatedOutputTmpDir.name, name);
 
