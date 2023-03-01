@@ -72,6 +72,13 @@ jobs:
         run: |
           git config --global user.name "${{ env.GIT_NAME }}"
           git config --global user.email "${{ env.GIT_EMAIL }}"
-      - run: node ./dev/update-editor-output-repos.js
+      - name: Publish JavaScript branches
+        run: node ./dev/update-editor-output-repos.js
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          VARIANT: javascript
+      - name: Publish TypeScript branches
+        run: node ./dev/update-editor-output-repos.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          VARIANT: typescript
