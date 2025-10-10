@@ -15,8 +15,12 @@ on:
   # Manual run
   workflow_dispatch:
     inputs:
+      tag:
+        required: false
+        type: string
+        description: "Specify the git tag to use for ember-cli. We'll checkout the code at this tag, and assuming release succeeded, will invoke ember-cli at the version found at this tag"
       version:
-        required: true
+        required: false
         type: string
         description: 'Specify the released version of ember-cli to use to generate / update the output repos. Should be full semver version, and without a leading "v"'
   # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#running-your-workflow-only-when-a-push-of-specific-tags-occurs
@@ -38,42 +42,61 @@ env:
   GIT_EMAIL: "github-actions+bot@users.noreply.github.com"
 
 jobs:
+  # The goal of this is to generate a version to pass to `npx "ember-cli@$VERSION"`
+  #
+  # Inputs:
+  #   - if tag is passed we have to checkout code to determine version
+  #   - if version is passed, we just use that
+  #
+  # With no inputs:
+  #   - we only have github.ref_name, which means we need to checkout code to determine the version
   verify-inputs:
     name: "Verify Inputs"
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.determine.outputs.version }}
-      tag: ${{ steps.determine.outputs.tag }}
 
     steps:
       - id: determine
         run: |
+          function verifyVersion() {
+            if [[ "$VERSION" == v* ]]; then
+              echo "version, $VERSION, may not start with a 'v' character"
+              exit 1;
+            fi
+          }
+
           if [[ "${{ github.event.inputs.version }}" != "" ]]; then
-            TAG="v${{ github.event.inputs.version }}"
             VERSION="${{ github.event.inputs.version }}"
-          elif [[ "${{ github.ref_name }}" != "" ]]; then
-            TAG="${{github.ref_name}}"
-            _version="${{github.ref_name}}"
-            VERSION="${_version/v/''}"
-          else
-            echo "Could not determine tag / version"
-            echo ""
-            echo "github.ref_name = ${{ github.ref_name }}"
-            echo "event.inputs.version = ${{ github.event.inputs.version }}"
-            exit 1;
+
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          if [[ "$VERSION" == v* ]]; then
-            echo "version, $VERSION, may not start with a 'v' character"
-            exit 1;
+          if [[ "${{ github.event.inputs.tag }}" ]]; then
+            git clone ${{ github.action_repository	}} tmp-checkout
+            cd tmp-checkout
+            git checkout ${{ github.event.inputs.tag }}
+            echo "version=$(cat package.json | jq '.version')" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.ref_name }}" ]]; then
+            git clone ${{ github.action_repository	}} tmp-checkout
+            cd tmp-checkout
+            git checkout ${{ github.event.inputs.tag }}
+            echo "version=$(cat package.json | jq '.version')" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Could not determine tag / version"
+          echo ""
+          echo "github.ref_name = ${{ github.ref_name }}"
+          echo "event.inputs.version = ${{ github.event.inputs.version }}"
+          exit 1;
+
       - run: |
           echo "Version: '${{ steps.determine.outputs.version }}'"
-      - run: |
-          echo "Tag: '${{ steps.determine.outputs.tag }}'"
 
   push-addon-app:
     name: "Push to ${{ matrix.blueprint }} output repo"
