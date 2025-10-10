@@ -66,6 +66,8 @@ jobs:
             fi
           }
 
+          set -x
+
           if [[ "${{ github.event.inputs.version }}" != "" ]]; then
             VERSION="${{ github.event.inputs.version }}"
 
