@@ -75,17 +75,16 @@ jobs:
             exit 0
           fi
 
+          git clone ${{ github.repositoryUrl	}} tmp-checkout
+          cd tmp-checkout
+
           if [[ "${{ github.event.inputs.tag }}" ]]; then
-            git clone ${{ github.action_repository	}} tmp-checkout
-            cd tmp-checkout
             git checkout ${{ github.event.inputs.tag }}
             echo "version=$(cat package.json | jq '.version')" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           if [[ "${{ github.ref_name }}" ]]; then
-            git clone ${{ github.action_repository	}} tmp-checkout
-            cd tmp-checkout
             git checkout ${{ github.event.inputs.tag }}
             echo "version=$(cat package.json | jq '.version')" >> "$GITHUB_OUTPUT"
             exit 0
